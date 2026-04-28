@@ -2,27 +2,27 @@ package com.example.cronmed.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta Médica Moderna
-val MedicalBlue = Color(0xFF007BFF)
-val MedicalLightBlue = Color(0xFFE3F2FD)
-val MedicalDarkBlue = Color(0xFF0056B3)
-val SurfaceGray = Color(0xFFF8F9FA)
-val TextDark = Color(0xFF212529)
-val TextLight = Color(0xFF6C757D)
-val SuccessGreen = Color(0xFF28A745)
-val WarningOrange = Color(0xFFFD7E14)
+// CronMed+ Brand Colors
+val CronMedBlue = Color(0xFF1A6BCC)
+val CronMedBlueDark = Color(0xFF0D4FA0)
+val CronMedBlueLight = Color(0xFF4A90D9)
+val CronMedBackground = Color(0xFFEEF4FF)
+val CronMedSurface = Color(0xFFFFFFFF)
+val CronMedCardBlue = Color(0xFFE8F0FE)
 
-val PrimaryBlue = Color(0xFF0061A4)
-val OnPrimaryBlue = Color(0xFFFFFFFF)
-val PrimaryContainerBlue = Color(0xFFD1E4FF)
-val OnPrimaryContainerBlue = Color(0xFF001D36)
+val CronMedOrange = Color(0xFFFF6B35)
+val CronMedOrangeLight = Color(0xFFFFE8E0)
+val CronMedGreen = Color(0xFF34C759)
+val CronMedGreenLight = Color(0xFFE8F8ED)
+val CronMedPurple = Color(0xFF9B59B6)
+val CronMedPurpleLight = Color(0xFFF3E8FA)
+val CronMedTeal = Color(0xFF00BCD4)
+val CronMedTealLight = Color(0xFFE0F7FA)
 
-val SecondaryGrey = Color(0xFF535F70)
-val OnSecondaryGrey = Color(0xFFFFFFFF)
-val SecondaryContainerGrey = Color(0xFFD7E3F7)
-val OnSecondaryContainerGrey = Color(0xFF101C2B)
+val CronMedTextPrimary = Color(0xFF1A2B4A)
+val CronMedTextSecondary = Color(0xFF6B7A99)
+val CronMedTextHint = Color(0xFFADB8CC)
+val CronMedDivider = Color(0xFFE8EDF5)
 
-val BackgroundLight = Color(0xFFFDFBFF)
-val OnBackgroundLight = Color(0xFF1A1C1E)
-val SurfaceLight = Color(0xFFFDFBFF)
-val OnSurfaceLight = Color(0xFF1A1C1E)
+val CronMedError = Color(0xFFE53935)
+val CronMedWarning = Color(0xFFFF9800)

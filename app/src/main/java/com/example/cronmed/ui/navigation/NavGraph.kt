@@ -1,157 +1,177 @@
 package com.example.cronmed.ui.navigation
 
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.cronmed.data.local.MedicamentoEntity
 import com.example.cronmed.ui.screens.HistorialScreen
-import com.example.cronmed.ui.screens.HistorialScreenContent
-import com.example.cronmed.ui.screens.MedicamentoFormContent
 import com.example.cronmed.ui.screens.MedicamentoFormScreen
-import com.example.cronmed.ui.screens.MedicamentoScreenContent
-import com.example.cronmed.ui.theme.CronMedTheme
+import com.example.cronmed.ui.screens.MedicamentoScreen
+import com.example.cronmed.ui.theme.CronMedTextPrimary
+import com.example.cronmed.ui.theme.CronMedTextSecondary
 import com.example.cronmed.ui.viewmodel.MedicamentoViewModel
 
 sealed class Screen(val route: String) {
-    object List : Screen("list")
-    object Form : Screen("form/{id}") {
-        fun createRoute(id: Int) = "form/$id"
+    object Medicamentos : Screen("medicamentos")
+    object MedicamentoForm : Screen("medicamento_form/{medicamentoId}") {
+        fun createRoute(medicamentoId: Int) = "medicamento_form/$medicamentoId"
     }
-    object Historial : Screen("historial/{id}") {
-        fun createRoute(id: Int) = "historial/$id"
+    object Historial : Screen("historial/{medicamentoId}") {
+        fun createRoute(medicamentoId: Int) = "historial/$medicamentoId"
     }
 }
 
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    viewModel: MedicamentoViewModel = viewModel()
+    viewModel: MedicamentoViewModel
 ) {
-    NavGraphContent(
+    NavHost(
         navController = navController,
-        onListScreen = {
-            val medicamentos by viewModel.allMedicamentos.collectAsState()
-            MedicamentoScreenContent(
-                medicamentos = medicamentos,
-                onAddMedicamento = { navController.navigate(Screen.Form.createRoute(-1)) },
-                onEditMedicamento = { id -> navController.navigate(Screen.Form.createRoute(id)) },
-                onViewHistorial = { id -> navController.navigate(Screen.Historial.createRoute(id)) },
-                onToggleMedicamento = { med, active ->
-                    viewModel.update(med.copy(activo = active))
+        startDestination = Screen.Medicamentos.route
+    ) {
+        composable(Screen.Medicamentos.route) {
+            MedicamentoScreen(
+                viewModel = viewModel,
+                onAddMedicamento = {
+                    navController.navigate(Screen.MedicamentoForm.createRoute(-1))
                 },
-                onDeleteMedicamento = { viewModel.delete(it) }
+                onEditMedicamento = { id ->
+                    navController.navigate(Screen.MedicamentoForm.createRoute(id))
+                },
+                onViewHistorial = { id ->
+                    navController.navigate(Screen.Historial.createRoute(id))
+                }
             )
-        },
-        onFormScreen = { id ->
+        }
+
+        composable(
+            route = Screen.MedicamentoForm.route,
+            arguments = listOf(navArgument("medicamentoId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val medicamentoId = backStackEntry.arguments?.getInt("medicamentoId")
             MedicamentoFormScreen(
                 viewModel = viewModel,
-                medicamentoId = id,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        },
-        onHistorialScreen = { id ->
-            HistorialScreen(
-                viewModel = viewModel,
-                medicamentoId = id,
+                medicamentoId = if (medicamentoId == -1) null else medicamentoId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-    )
-}
 
-@Composable
-fun NavGraphContent(
-    navController: NavHostController,
-    onListScreen: @Composable () -> Unit,
-    onFormScreen: @Composable (Int?) -> Unit,
-    onHistorialScreen: @Composable (Int) -> Unit
-) {
-    NavHost(navController = navController, startDestination = Screen.List.route) {
-        composable(Screen.List.route) {
-            onListScreen()
-        }
-        composable(
-            route = Screen.Form.route,
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt("id")
-            onFormScreen(id)
-        }
         composable(
             route = Screen.Historial.route,
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
+            arguments = listOf(navArgument("medicamentoId") { type = NavType.IntType })
         ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt("id") ?: -1
-            onHistorialScreen(id)
+            val medicamentoId = backStackEntry.arguments?.getInt("medicamentoId") ?: return@composable
+            HistorialScreen(
+                viewModel = viewModel,
+                medicamentoId = medicamentoId,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun NavGraphPreview() {
-    val sampleMedicamento = MedicamentoEntity(
-        id = 1,
-        nombre = "Paracetamol",
-        dosis = "500mg",
-        frecuenciaHoras = 8,
-        horaInicio = System.currentTimeMillis(),
-        observaciones = "Después de comer",
-        activo = true
+// Using system default (Roboto) — matches the clean medical app aesthetic.
+val CronMedTypography = Typography(
+    displayLarge = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        lineHeight = 40.sp,
+        letterSpacing = (-0.5).sp,
+        color = CronMedTextPrimary
+    ),
+    displayMedium = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
+        letterSpacing = (-0.3).sp,
+        color = CronMedTextPrimary
+    ),
+    headlineLarge = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp,
+        lineHeight = 32.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextPrimary
+    ),
+    headlineMedium = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextPrimary
+    ),
+    headlineSmall = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextPrimary
+    ),
+    titleLarge = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 17.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextPrimary
+    ),
+    titleMedium = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 15.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.1.sp,
+        color = CronMedTextPrimary
+    ),
+    titleSmall = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 13.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp,
+        color = CronMedTextPrimary
+    ),
+    bodyLarge = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 15.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextPrimary
+    ),
+    bodyMedium = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 13.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextSecondary
+    ),
+    bodySmall = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.sp,
+        color = CronMedTextSecondary
+    ),
+    labelLarge = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    ),
+    labelMedium = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelSmall = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 10.sp,
+        lineHeight = 14.sp,
+        letterSpacing = 0.5.sp
     )
-
-    CronMedTheme {
-        val navController = rememberNavController()
-        NavGraphContent(
-            navController = navController,
-            onListScreen = {
-                MedicamentoScreenContent(
-                    medicamentos = listOf(sampleMedicamento),
-                    onAddMedicamento = {},
-                    onEditMedicamento = {},
-                    onViewHistorial = {},
-                    onToggleMedicamento = { _, _ -> },
-                    onDeleteMedicamento = {}
-                )
-            },
-            onFormScreen = { _ ->
-                MedicamentoFormContent(
-                    medicamentoId = -1,
-                    nombre = "",
-                    onNombreChange = {},
-                    dosis = "",
-                    onDosisChange = {},
-                    frecuencia = "",
-                    onFrecuenciaChange = {},
-                    observaciones = "",
-                    onObservacionesChange = {},
-                    activo = true,
-                    onActivoChange = {},
-                    horaInicioMillis = System.currentTimeMillis(),
-                    onTimeClick = {},
-                    selectedImageUri = null,
-                    existingImagePath = null,
-                    onImageClick = {},
-                    onSaveClick = {},
-                    onNavigateBack = {}
-                )
-            },
-            onHistorialScreen = { _ ->
-                HistorialScreenContent(
-                    medicamento = sampleMedicamento,
-                    historial = emptyList(),
-                    onNavigateBack = {},
-                    onRegistrarToma = {}
-                )
-            }
-        )
-    }
-}
+)

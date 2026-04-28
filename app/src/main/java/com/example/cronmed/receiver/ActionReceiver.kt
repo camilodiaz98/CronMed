@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import com.example.cronmed.data.local.HistorialEntity
 import com.example.cronmed.data.local.MedicamentoDatabase
-import com.example.cronmed.data.local.MedicamentoEntity
 import com.example.cronmed.util.AlarmScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,6 @@ class ActionReceiver : BroadcastReceiver() {
 
             when (action) {
                 "TOMAR" -> {
-                    // Guardar historial
                     dao.insertHistorial(
                         HistorialEntity(
                             medicamentoId = id,
@@ -35,14 +33,13 @@ class ActionReceiver : BroadcastReceiver() {
                             estado = "TOMADO"
                         )
                     )
-                    // Programar siguiente dosis
-                    val siguienteHora = medicamento.horaInicio + (medicamento.frecuenciaHoras * 3600000L)
+                    // Calcular próxima toma relativa al momento actual (Flexible)
+                    val siguienteHora = System.currentTimeMillis() + (medicamento.frecuenciaHoras * 3600000L)
                     val actualizado = medicamento.copy(horaInicio = siguienteHora)
                     dao.updateMedicamento(actualizado)
                     scheduler.schedule(actualizado)
                 }
                 "POSPONER" -> {
-                    // Guardar historial de posposición
                     dao.insertHistorial(
                         HistorialEntity(
                             medicamentoId = id,
@@ -53,9 +50,27 @@ class ActionReceiver : BroadcastReceiver() {
                             observaciones = "Pospuesto 1 hora"
                         )
                     )
-                    // Reprogramar en 1 hora
-                    val pospuesto = medicamento.copy(horaInicio = System.currentTimeMillis() + 3600000L)
-                    scheduler.schedule(pospuesto)
+                    // Reprogramar en 1 hora desde el momento actual
+                    val nuevaHora = System.currentTimeMillis() + 3600000L
+                    val actualizado = medicamento.copy(horaInicio = nuevaHora)
+                    dao.updateMedicamento(actualizado) // Actualizar DB para que la UI lo refleje
+                    scheduler.schedule(actualizado)
+                }
+                "OMITIR" -> {
+                    dao.insertHistorial(
+                        HistorialEntity(
+                            medicamentoId = id,
+                            nombreMedicamento = medicamento.nombre,
+                            fechaHoraProgramada = medicamento.horaInicio,
+                            fechaHoraReal = System.currentTimeMillis(),
+                            estado = "OMITIDO"
+                        )
+                    )
+                    // Saltar esta dosis y programar la siguiente según frecuencia (Relativa a ahora)
+                    val siguienteHora = System.currentTimeMillis() + (medicamento.frecuenciaHoras * 3600000L)
+                    val actualizado = medicamento.copy(horaInicio = siguienteHora)
+                    dao.updateMedicamento(actualizado)
+                    scheduler.schedule(actualizado)
                 }
             }
 
