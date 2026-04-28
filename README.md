@@ -31,4 +31,4 @@ CronMed+ es una aplicación de Android moderna diseñada para ayudar a los usuar
 - `util`: Clases de utilidad para gestión de alarmas y almacenamiento de imágenes.
 
 ## 👤 Desarrollado por
-**camilodiaz desarrollo**
+**camilodiaz**
